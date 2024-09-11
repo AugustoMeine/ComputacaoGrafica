@@ -6,9 +6,9 @@ import cores as cor
 
 pygame.init()
 
-modes = pygame.display.list_modes()
-tela_largura, tela_altura = modes[0]
-origem = np.array([tela_altura/2, tela_largura/2])
+tela_largura, tela_altura = 1080,720
+origem = np.array([tela_largura/2, tela_altura/2])
+print(origem)
 tela = pygame.display.set_mode((tela_largura,tela_altura))
 
 pygame.display.set_caption("Augusto - Modelagem grafica")
@@ -43,7 +43,7 @@ while running:
     
     desenhar_grid(tela, cor.PRETO)
     desenhar_eixos(tela,cor.PRETO,cor.PRETO)
-    desenhar_vetor(tela,origem,vetor,cor.PRETO,"Vetor A")
+    desenhar_vetor(tela,origem,vetor,cor.VERMELHO,"Vetor A")
 
     pygame.display.flip()
 
