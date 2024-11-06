@@ -1,51 +1,72 @@
 import pygame
-import sys
-import numpy as np
-import cores as cor
-#from vetor import vetor
+from pygame.locals import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from objetos.esfera import desenhar_esfera
+from objetos.cubo import desenhar_cubo
+from objetos.arma import desenhar_pistola
+from iluminacao.iluminacao_basica import iniciar_iluminacao
+from OpenGL.GLUT import *
 
-pygame.init()
+telaX = 0
+telaY = 0
+telaZ = -5
+rotacaoX = 0
+rotacaoY = 0
+rotacaoZ = 0
 
-tela_largura, tela_altura = 1080,720
-origem = np.array([tela_largura/2, tela_altura/2])
-print(origem)
-tela = pygame.display.set_mode((tela_largura,tela_altura))
+def init():    
+    glClearColor(0.0, 0.0, 0.0, 1.0)
+    glClearDepth(1.0)
+    glEnable(GL_DEPTH_TEST)
+    glDepthFunc(GL_LEQUAL)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(45.0, 640.0 / 480.0, 0.1, 100.0)
+    glMatrixMode(GL_MODELVIEW)
 
-pygame.display.set_caption("Augusto - Modelagem grafica")
+def main():
+    global telaX, telaY, telaZ, rotacaoX, rotacaoY, rotacaoZ
+    pygame.init()
+    pygame.display.set_mode((640, 480), DOUBLEBUF | OPENGL)
+    init()
+    iniciar_iluminacao()
 
-def desenhar_vetor(tela, origem, vetor, cor, texto):
-    pygame.draw.line(tela, cor, origem, np.add(origem,vetor), 2)
-    tela.blit(pygame.font.Font(None, 24).render(texto + "["+str(vetor[0]) +","+str(vetor[1])+"]", True, cor),np.add(vetor,origem))
-
-def desenhar_grid(tela, color):
-    for x in range (0, tela_largura, 10):
-        pygame.draw.line(tela, cor.PRETO,(x,0),(x,tela_altura))
-    for y in range (0, tela_altura, 10):
-        pygame.draw.line(tela, cor.PRETO,(0,y),(tela_largura,y))
-
-def desenhar_eixos(sreen, colorX, colorY):
-    pygame.draw.line(tela, colorX,(0,tela_altura/2),(tela_largura,tela_altura/2),3)
-    pygame.draw.line(tela, colorY,(tela_largura/2,0),(tela_largura/2,tela_altura),3)
-
-vetor = np.array((100,200))
-
-#Execução
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 running = False
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+                elif event.key == K_w:
+                    telaY += 0.1
+                elif event.key == K_s:
+                    telaY -= 0.1
+                elif event.key == K_a:
+                    telaX -= 0.1
+                elif event.key == K_d:
+                    telaX += 0.1
+                elif event.key == K_UP:
+                    rotacaoX += 5
+                elif event.key == K_DOWN:
+                    rotacaoX -= 5
+                elif event.key == K_LEFT:
+                    rotacaoY -= 5
+                elif event.key == K_RIGHT:
+                    rotacaoY += 5
 
-    tela.fill(cor.BRANCO)
-    
-    desenhar_grid(tela, cor.PRETO)
-    desenhar_eixos(tela,cor.PRETO,cor.PRETO)
-    desenhar_vetor(tela,origem,vetor,cor.VERMELHO,"Vetor A")
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    pygame.display.flip()
+        #materilal https://opengameart.org/content/desert-eagle-0
+        #telaX, telaY, telaZ, rotacaoX, rotacaoY, rotacaoZ
+        desenhar_pistola(telaX, telaY, telaZ, rotacaoX, rotacaoY, rotacaoZ)
+        
+        pygame.display.flip()
+        pygame.time.wait(10)
+        
+    pygame.quit()
 
-pygame.quit()
-sys.exit()
+if __name__ == "__main__":
+    main()
