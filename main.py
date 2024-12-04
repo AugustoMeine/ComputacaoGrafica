@@ -149,16 +149,16 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
+                if event.key == K_ESCAPE:                    
                     running = False
                 elif event.key == K_w:
-                    telaY += 0.1
+                    telaY += 1
                 elif event.key == K_s:
-                    telaY -= 0.1
+                    telaY -= 1
                 elif event.key == K_a:
-                    telaX -= 0.1
+                    telaX -= 1
                 elif event.key == K_d:
-                    telaX += 0.1
+                    telaX += 1
                 elif event.key == K_UP:
                     rotacaoX += 5
                 elif event.key == K_DOWN:
@@ -168,7 +168,8 @@ def main():
                 elif event.key == K_RIGHT:
                     rotacaoY += 5    
                 elif event.key == K_q:
-                    telaZ += 5
+                    if(telaZ < -10):
+                        telaZ += 5
                 elif event.key == K_e:
                     telaZ -= 5           
 
