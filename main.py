@@ -3,12 +3,8 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import trimesh
-from trimesh.exchange.load import load_mesh
-from OpenGL.GLUT import *
-from PIL import Image
-from trimesh.visual import texture, TextureVisuals
 import numpy as np
+from trimesh.exchange.load import load_mesh
 
 telaX = 0
 telaY = 0
