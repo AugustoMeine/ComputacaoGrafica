@@ -35,10 +35,6 @@ Este projeto é uma simulação gráfica de um sistema solar utilizando Python c
 - `main.py`: Script principal que inicializa a janela, carrega texturas e desenha os objetos.
 - `objetos/texturas/`: Diretório contendo as texturas utilizadas para os planetas e o Sol.
 
-## Capturas de Tela
+## Aplicativo
 
-![Sistema Solar](screenshots/sistema_solar.png)
-
-## Licença
-
-Este projeto é licenciado sob a [MIT License](LICENSE).
+https://github.com/user-attachments/assets/aa27f2f7-46cf-4d81-a129-79e226fcdc9d
