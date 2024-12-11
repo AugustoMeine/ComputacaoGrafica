@@ -4,7 +4,6 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 import numpy as np
-from trimesh.exchange.load import load_mesh
 
 telaX = 0
 telaY = 0
@@ -29,7 +28,7 @@ def init():
     glEnable(GL_NORMALIZE)
 
 def carregar_textura(caminho_textura):
-    texture_surface = pygame.image.load(caminho_textura)
+    texture_surface = pygame.image.load(os.path.join(os.path.dirname(__file__), caminho_textura))
     texture_data = pygame.image.tostring(texture_surface, "RGB", True)
     width, height = texture_surface.get_rect().size
 
@@ -40,78 +39,22 @@ def carregar_textura(caminho_textura):
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glEnable(GL_TEXTURE_2D)
     return texture_id
 
-def carregar_materiais(nome_arquivo):
-    materiais = {}
-    material_atual = None
-    diretorio_base = os.path.dirname(nome_arquivo)
-
-    with open(nome_arquivo) as f:
-        for line in f:
-            if line.startswith('newmtl '):
-                material_atual = line.strip().split()[1]
-                materiais[material_atual] = {}
-            elif material_atual:
-                if line.startswith('Kd '):
-                    materiais[material_atual]['Kd'] = list(map(float, line.strip().split()[1:]))
-                elif line.startswith('Ka '):
-                    materiais[material_atual]['Ka'] = list(map(float, line.strip().split()[1:]))
-                elif line.startswith('Ks '):
-                    materiais[material_atual]['Ks'] = list(map(float, line.strip().split()[1:]))
-                elif line.startswith('Ns '):
-                    materiais[material_atual]['Ns'] = float(line.strip().split()[1])
-                elif line.startswith('map_Kd '):
-                    caminho_textura = os.path.join(diretorio_base, 'texturas', line.strip().split()[1])
-                    materiais[material_atual]['map_Kd'] = caminho_textura
-    return materiais
-
-def calcular_rotacao(angulo, raio, eixo):
+def calcular_rotacao(angulo, raio):
     rad = np.radians(angulo)
-    if eixo == 'X':
-        x = 0
-        y = raio * np.cos(rad)
-        z = raio * np.sin(rad)
-    elif eixo == 'Y':
-        x = raio * np.cos(rad)
-        y = 0
-        z = raio * np.sin(rad)
-    elif eixo == 'Z':
-        x = raio * np.cos(rad)
-        y = raio * np.sin(rad)
-        z = 0
+    x = raio * np.cos(rad)
+    y = 0
+    z = raio * np.sin(rad)
     return x, y, z
 
-def desenhar_objeto_trimesh(mesh, materiais):
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glEnableClientState(GL_NORMAL_ARRAY)
-    
-    vertices = mesh.vertices.view(dtype=float)
-    normais = mesh.vertex_normals.view(dtype=float)
-    
-    glVertexPointer(3, GL_FLOAT, 0, vertices)
-    glNormalPointer(GL_FLOAT, 0, normais)
-    
-    if hasattr(mesh.visual, 'uv') and mesh.visual.uv is not None:
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
-        texturas = mesh.visual.uv.view(dtype=float)
-        glTexCoordPointer(2, GL_FLOAT, 0, texturas)
-        
-        for material_name, material in materiais.items():
-            if 'map_Kd' in material:
-                caminho_textura = material['map_Kd']
-                texture_id = carregar_textura(caminho_textura)
-                glBindTexture(GL_TEXTURE_2D, texture_id)
-                glEnable(GL_TEXTURE_2D)
-            else:
-                glDisable(GL_TEXTURE_2D)
-    
-    glDrawElements(GL_TRIANGLES, len(mesh.faces) * 3, GL_UNSIGNED_INT, mesh.faces)
-    
-    glDisableClientState(GL_VERTEX_ARRAY)
-    glDisableClientState(GL_NORMAL_ARRAY)
-    if hasattr(mesh.visual, 'uv') and mesh.visual.uv is not None:
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
+def desenhar_esfera(raio, textura_id):
+    glBindTexture(GL_TEXTURE_2D, textura_id)
+    quad = gluNewQuadric()
+    gluQuadricTexture(quad, GL_TRUE)
+    gluSphere(quad, raio, 40, 40)
+    gluDeleteQuadric(quad)
 
 def main():
     global telaX, telaY, telaZ, rotacaoX, rotacaoY, rotacaoZ
@@ -119,25 +62,23 @@ def main():
     pygame.display.set_mode((1080, 720), DOUBLEBUF | OPENGL)
     init()
 
-    cenaSol = load_mesh('objetos/planeta.obj')
-    materialSol = carregar_materiais('objetos/planetaSol.mtl')
-    meshSol = cenaSol
-
-    cenaTerra = load_mesh('objetos/planeta.obj')
-    materialTerra = carregar_materiais('objetos/planetaTerra.mtl')
-    meshTerra = cenaTerra
-
-    cenaPlanetaUm = load_mesh('objetos/planeta.obj')
-    materialPlanetaUm = carregar_materiais('objetos/planetaUm.mtl')
-    meshPlanetaUm = cenaPlanetaUm
-
-    cenaPlanetaDois = load_mesh('objetos/planeta.obj')
-    materialPlanetaDois = carregar_materiais('objetos/planetaDois.mtl')
-    meshPlanetaDois = cenaPlanetaDois
+    textura_terra = carregar_textura('objetos/texturas/terra.png')
+    textura_sol = carregar_textura('objetos/texturas/sol.png')
+    textura_planeta1 = carregar_textura('objetos/texturas/Planeta1.png')
+    textura_planeta2 = carregar_textura('objetos/texturas/Planeta2.png')
+    textura_planeta3 = carregar_textura('objetos/texturas/Planeta3.png')
+    textura_planeta4 = carregar_textura('objetos/texturas/Planeta4.png')
+    textura_planeta5 = carregar_textura('objetos/texturas/Planeta5.png')
+    textura_planeta6 = carregar_textura('objetos/texturas/Planeta6.png')
+    
 
     anguloTerra = 0
     anguloPlanetaUm = 0
     anguloPlanetaDois = 0
+    anguloPlanetaTres = 0
+    anguloPlanetaQuatro = 0
+    anguloPlanetaCinco = 0
+    anguloPlanetaSeis = 0
 
     running = True
     while running:
@@ -180,14 +121,18 @@ def main():
         glRotatef(rotacaoY, 0, 1, 0)
         glRotatef(rotacaoZ, 0, 0, 1)
         
-        desenhar_objeto_trimesh(meshSol, materialSol)
+        desenhar_esfera(2, textura_sol)
         glPopMatrix()
 
-        anguloTerra += 4
-        anguloPlanetaUm += 4
-        anguloPlanetaDois += 4
+        anguloTerra += 1
+        anguloPlanetaUm += 2
+        anguloPlanetaDois += 3
+        anguloPlanetaTres += 2
+        anguloPlanetaQuatro += 1
+        anguloPlanetaCinco += 3
+        anguloPlanetaSeis += 2
 
-        x, y, z = calcular_rotacao(anguloTerra, 4, 'Y')
+        x, y, z = calcular_rotacao(anguloTerra, 6)
         glPushMatrix()
         glTranslatef(telaX + x, telaY + y, telaZ + z)
         glScalef(1, 1, 1)
@@ -195,10 +140,10 @@ def main():
         glRotatef(rotacaoY, 0, 1, 0)
         glRotatef(rotacaoZ, 0, 0, 1)
         
-        desenhar_objeto_trimesh(meshTerra, materialTerra)
+        desenhar_esfera(1, textura_terra)
         glPopMatrix()
 
-        x, y, z = calcular_rotacao(anguloPlanetaUm, 7, 'Z')
+        x, y, z = calcular_rotacao(anguloPlanetaUm, 8)
         glPushMatrix()
         glTranslatef(telaX + x, telaY + y, telaZ + z)
         glScalef(0.5, 0.5, 0.5)
@@ -206,10 +151,10 @@ def main():
         glRotatef(rotacaoY, 0, 1, 0)
         glRotatef(rotacaoZ, 0, 0, 1)
         
-        desenhar_objeto_trimesh(meshPlanetaUm, materialPlanetaUm)
+        desenhar_esfera(0.5, textura_planeta1)
         glPopMatrix()
 
-        x, y, z = calcular_rotacao(anguloPlanetaDois, 12, 'X')
+        x, y, z = calcular_rotacao(anguloPlanetaDois, 10)
         glPushMatrix()
         glTranslatef(telaX + x, telaY + y, telaZ + z)
         glScalef(0.75, 0.75, 0.75)
@@ -217,7 +162,51 @@ def main():
         glRotatef(rotacaoY, 0, 1, 0)
         glRotatef(rotacaoZ, 0, 0, 1)
         
-        desenhar_objeto_trimesh(meshPlanetaDois, materialPlanetaDois)
+        desenhar_esfera(0.75, textura_planeta2)
+        glPopMatrix()
+
+        x, y, z = calcular_rotacao(anguloPlanetaTres, 12)
+        glPushMatrix()
+        glTranslatef(telaX + x, telaY + y, telaZ + z)
+        glScalef(0.6, 0.6, 0.6)
+        glRotatef(rotacaoX, 1, 0, 0)
+        glRotatef(rotacaoY, 0, 1, 0)
+        glRotatef(rotacaoZ, 0, 0, 1)
+        
+        desenhar_esfera(0.6, textura_planeta3)
+        glPopMatrix()
+
+        x, y, z = calcular_rotacao(anguloPlanetaQuatro, 14)
+        glPushMatrix()
+        glTranslatef(telaX + x, telaY + y, telaZ + z)
+        glScalef(0.7, 0.7, 0.7)
+        glRotatef(rotacaoX, 1, 0, 0)
+        glRotatef(rotacaoY, 0, 1, 0)
+        glRotatef(rotacaoZ, 0, 0, 1)
+        
+        desenhar_esfera(0.7, textura_planeta4)
+        glPopMatrix()
+
+        x, y, z = calcular_rotacao(anguloPlanetaCinco, 16)
+        glPushMatrix()
+        glTranslatef(telaX + x, telaY + y, telaZ + z)
+        glScalef(0.8, 0.8, 0.8)
+        glRotatef(rotacaoX, 1, 0, 0)
+        glRotatef(rotacaoY, 0, 1, 0)
+        glRotatef(rotacaoZ, 0, 0, 1)
+        
+        desenhar_esfera(0.8, textura_planeta5)
+        glPopMatrix()
+
+        x, y, z = calcular_rotacao(anguloPlanetaSeis, 18)
+        glPushMatrix()
+        glTranslatef(telaX + x, telaY + y, telaZ + z)
+        glScalef(0.9, 0.9, 0.9)
+        glRotatef(rotacaoX, 1, 0, 0)
+        glRotatef(rotacaoY, 0, 1, 0)
+        glRotatef(rotacaoZ, 0, 0, 1)
+        
+        desenhar_esfera(0.9, textura_planeta6)
         glPopMatrix()
         
         pygame.display.flip()
